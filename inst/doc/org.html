@@ -10,7 +10,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<meta name="author" content="Richard White" />
+<meta name="author" content="Richard Aubrey White" />
 
 <meta name="date" content="2020-02-17" />
 
@@ -238,7 +238,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <h1 class="title toc-ignore">Introduction to org</h1>
-<h4 class="author">Richard White</h4>
+<h4 class="author">Richard Aubrey White</h4>
 <h4 class="date">2020-02-17</h4>
 
 
@@ -280,7 +280,7 @@ do we get similar results to yesterday?”)</li>
 <p><code>org::initialize_project</code> takes in 2+ arguments. It then
 saves its results (i.e. folder locations) in <code>org::project</code>,
 which you will use in all of your subsequent code.</p>
-<p><code>home</code> is the location of <code>Run.R</code> and the
+<p><code>home</code> is the location of <code>run.R</code> and the
 <code>R/</code> folder. It will be accessible via
 <code>org::project$home</code> (but you will rarely need this).</p>
 <p><code>results</code> is your results folder. It will create a folder
@@ -296,8 +296,8 @@ ones are <code>raw</code> (raw data) and <code>clean</code> (clean
 data).</p>
 </div>
 <div id="run.r" class="section level3">
-<h3>Run.R</h3>
-<p><code>Run.R</code> will be your masterfile. It will sequentially run
+<h3>run.R</h3>
+<p><code>run.R</code> will be your masterfile. It will sequentially run
 through every part of your analysis:</p>
 <ul>
 <li>data cleaning</li>
@@ -310,9 +310,9 @@ when you need to return to your code 2 years later.</p>
 analyses for table 2, result generation for table 1, sensitivity
 analysis 1, etc) will be encapsulated in functions that live in the
 <code>R</code> folder.</p>
-<p>An example <code>Run.R</code> might look like this:</p>
+<p>An example <code>run.R</code> might look like this:</p>
 <pre><code># Define the following &#39;special&#39; locations:
-# &#39;home&#39; (i.e. Run.R and R/ folder)
+# &#39;home&#39; (i.e. run.R and R/ folder)
 # &#39;results&#39; (i.e. A folder with today&#39;s date will be created here)
 
 # Define any other locations you want:
@@ -366,142 +366,132 @@ scripts in <code>org::project$home/R</code>, making them available for
 use.</p>
 </div>
 </div>
+<div id="research-article-versioning-submissionresubmission" class="section level2">
+<h2>Research Article Versioning (Submission/Resubmission)</h2>
+<p>When writing a research article, multiple versions are often required
+(initial submission, followed by multiple resubmission variants based on
+the recommendations of peer reviewers).</p>
+<p>To account for this, on the initial submission of the article it is
+recommended to rename <code>run.R</code> and <code>R/</code> to
+<code>run_YYYY_MM_DD_submission_1.R</code> and
+<code>R_YYYY_MM_DD_submission_1/</code> (YYYY_MM_DD should be replaced
+with year, month, and date).</p>
+<p>When making adjustments for the resubmission, the relevant
+files/folders should be called
+<code>run_YYYY_MM_DD_submission_2.R</code> and
+<code>R_YYYY_MM_DD_submission_2/</code> (YYYY_MM_DD should be replaced
+with year, month, and date).</p>
+<p>In doing so, you successfully preserve all of your code that produced
+the results for every submission, allowing you to easily ensure that all
+changes are deliberate and intentional.</p>
+</div>
 <div id="solutions" class="section level2">
 <h2>Solutions</h2>
 <div id="best-practice" class="section level3">
 <h3>Best Practice</h3>
-<p>Our (very opinionated) solution is as follows:</p>
-<p>Code should be stored in Github. Data should be stored locally in an
+<p>Our very opinionated solution is as follows:</p>
+<p>Code should be stored in GitHub. Data should be stored locally in an
 encrypted volume. Results should be stored on Dropbox, with the results
 for each day stored in a different folder.</p>
 <pre><code># code goes here:
 git
   +-- analyses
              +-- 2018
-             |      +-- analysis1 &lt;- org::project$home
-             |      |           +-- Run.R
+             |      +-- analysis_1 &lt;- org::project$home
+             |      |           +-- run.R
              |      |           +-- R
-             |      |                  +-- CleanData.R
-             |      |                  +-- Descriptives.R
-             |      |                  +-- Analysis1.R
-             |      |                  +-- Graphs1.R
-             |      +-- analysis2 &lt;- org::project$home
-             |                  +-- Run.R
+             |      |                  +-- clean_data.R
+             |      |                  +-- descriptives.R
+             |      |                  +-- analysis.R
+             |      |                  +-- figure_1.R
+             |      +-- analysis_2 &lt;- org::project$home
+             |                  +-- run.R
              |                  +-- R
-             |                         +-- CleanData.R
-             |                         +-- Descriptives.R
-             |                         +-- Analysis1.R
-             |                         +-- Graphs1.R
+             |                         +-- clean_data.R
+             |                         +-- descriptives.R
+             |                         +-- analysis.R
+             |                         +-- figure_1.R
              +-- 2019
-                    +-- analysis3 &lt;- org::project$home
-                                +-- Run.R
+                    +-- analysis_3 &lt;- org::project$home
+                                +-- run.R
                                 +-- R
-                                       +-- CleanData.R
-                                       +-- Descriptives.R
-                                       +-- Analysis1.R
-                                       +-- Graphs1.R
+                                       +-- clean_data.R
+                                       +-- descriptives.R
+                                       +-- analysis.R
+                                       +-- figure_1.R
                                        
 # results goes here:
 dropbox
   +-- analyses_results
              +-- 2018
-             |      +-- analysis1 &lt;- org::project$results
+             |      +-- analysis_1 &lt;- org::project$results
              |      |           +-- 2018-03-12 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
              |      |           +-- 2018-03-15 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
              |      |           +-- 2018-03-18 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
-             |      |           |            +-- figure2.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
+             |      |           |            +-- figure_2.png
              |      |           +-- 2018-06-18 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- table2.xlsx
-             |      |           |            +-- figure1.png
-             |      |           |            +-- figure2.png
-             |      +-- analysis2 &lt;- org::project$results
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- table_2.xlsx
+             |      |           |            +-- figure_1.png
+             |      |           |            +-- figure_2.png
+             |      +-- analysis_2 &lt;- org::project$results
              |      |           +-- 2018-06-09 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
              |      |           +-- 2018-12-15 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
              |      |           +-- 2019-01-18 &lt;- org::project$results_today
-             |      |           |            +-- table1.xlsx
-             |      |           |            +-- figure1.png
-             |      |           |            +-- figure2.png
+             |      |           |            +-- table_1.xlsx
+             |      |           |            +-- figure_1.png
+             |      |           |            +-- figure_2.png
              +-- 2019
-                    +-- analysis3 &lt;- org::project$results
+                    +-- analysis_3 &lt;- org::project$results
                     |           +-- 2019-06-09 &lt;- org::project$results_today
-                    |           |            +-- table1.xlsx
-                    |           |            +-- figure1.png
+                    |           |            +-- table_1.xlsx
+                    |           |            +-- figure_1.png
                     |           +-- 2019-12-15 &lt;- org::project$results_today
-                    |           |            +-- table1.xlsx
-                    |           |            +-- figure1.png
+                    |           |            +-- table_1.xlsx
+                    |           |            +-- figure_1.png
                     |           +-- 2020-01-18 &lt;- org::project$results_today
-                    |           |            +-- table1.xlsx
-                    |           |            +-- figure1.png
-                    |           |            +-- figure2.png
+                    |           |            +-- table_1.xlsx
+                    |           |            +-- figure_1.png
+                    |           |            +-- figure_2.png
 
 # data goes here:
 data
   +-- analyses
              +-- 2018
-             |      +-- analysis1 &lt;- org::project$raw
+             |      +-- analysis_1 &lt;- org::project$raw
              |      |           +-- data.xlsx
-             |      +-- analysis2 &lt;- org::project$raw
+             |      +-- analysis_2 &lt;- org::project$raw
              |      |           +-- data.xlsx
              +-- 2019
-                    +-- analysis3 &lt;- org::project$raw
+                    +-- analysis_3 &lt;- org::project$raw
                                 +-- data.xlsx
 </code></pre>
-<p>Suggested code for <code>Run.R</code>:</p>
+<p>Suggested code for <code>run.R</code>:</p>
 <pre><code>org::initialize_project(
   env = .GlobalEnv,
-  home = &quot;/git/analyses/2019/analysis3/&quot;,
-  results = &quot;/dropbox/analyses_results/2019/analysis3/&quot;,
-  raw = &quot;/data/analyses/2019/analysis3/&quot;
+  home = &quot;/git/analyses/2019/analysis_3/&quot;,
+  results = &quot;/dropbox/analyses_results/2019/analysis_3/&quot;,
+  raw = &quot;/data/analyses/2019/analysis_3/&quot;
 )</code></pre>
 </div>
-<div id="one-folder-on-a-shared-network-drive" class="section level3">
-<h3>One Folder on a Shared Network Drive</h3>
+<div id="quarto" class="section level3">
+<h3>Quarto</h3>
 <p>If you only have one folder on a shared network drive, without access
-to github or dropbox, then we propose the following solution:</p>
-<pre><code># code goes here:
-project_name &lt;- org::project$home
-  +-- Run.R
-  +-- R
-  |      +-- CleanData.R
-  |      +-- Descriptives.R
-  |      +-- Analysis1.R
-  |      +-- Graphs1.R
-  +-- results &lt;- org::project$results
-  |         +-- 2018-03-12 &lt;- org::project$results_today
-  |         |            +-- table1.xlsx
-  |         |            +-- figure1.png
-  |         +-- 2018-03-12 &lt;- org::project$results_today
-  |         |            +-- table1.xlsx
-  |         |            +-- figure1.png
-  +-- data_raw &lt;- org::project$raw
-  |          +-- data.xlsx</code></pre>
-<p>Suggested code for <code>Run.R</code>:</p>
-<pre><code>org::initialize_project(
-  env = .GlobalEnv,
-  home = &quot;/network/project_name/&quot;,
-  results = &quot;/network/project_name/results/&quot;,
-  raw = &quot;/network/project_name/data_raw/&quot;
-)</code></pre>
-</div>
-<div id="rmarkdown" class="section level3">
-<h3>RMarkdown</h3>
-<p>If you only have one folder on a shared network drive, without access
-to github or dropbox, and you would like to create an RMarkdown
+to GitHub or Dropbox, and you would like to create an RMarkdown
 document, then we propose the following solution:</p>
 <pre><code># code goes here:
 project_name &lt;- org::project$home
-  +-- Run.R
+  +-- run.R
   +-- R
   |      +-- CleanData.R
   |      +-- Descriptives.R
@@ -518,7 +508,7 @@ project_name &lt;- org::project$home
   |         |            +-- figure1.png
   +-- data_raw &lt;- org::project$raw
   |          +-- data.xlsx</code></pre>
-<p>Suggested code for <code>Run.R</code>:</p>
+<p>Suggested code for <code>run.R</code>:</p>
 <pre><code># Initialize the project
 
 org::initialize_project(
@@ -537,6 +527,35 @@ rmarkdown::render(
   input = fs::path(org::project$paper,&quot;paper.Rmd&quot;),
   output_dir = org::project$results_today,
   quiet = F
+)</code></pre>
+</div>
+<div id="one-folder-on-a-shared-network-drive-without-github-access" class="section level3">
+<h3>One Folder on a Shared Network Drive Without GitHub Access</h3>
+<p>If you only have one folder on a shared network drive, without access
+to GitHub or Dropbox, then we propose the following solution:</p>
+<pre><code># code goes here:
+project_name &lt;- org::project$home
+  +-- run.R
+  +-- R
+  |      +-- clean_data.R
+  |      +-- descriptives.R
+  |      +-- analysis.R
+  |      +-- figure_1.R
+  +-- results &lt;- org::project$results
+  |         +-- 2018-03-12 &lt;- org::project$results_today
+  |         |            +-- table_1.xlsx
+  |         |            +-- figure_1.png
+  |         +-- 2018-03-12 &lt;- org::project$results_today
+  |         |            +-- table_1.xlsx
+  |         |            +-- figure_1.png
+  +-- data_raw &lt;- org::project$raw
+  |          +-- data.xlsx</code></pre>
+<p>Suggested code for <code>run.R</code>:</p>
+<pre><code>org::initialize_project(
+  env = .GlobalEnv,
+  home = &quot;/network/project_name/&quot;,
+  results = &quot;/network/project_name/results/&quot;,
+  raw = &quot;/network/project_name/data_raw/&quot;
 )</code></pre>
 </div>
 </div>

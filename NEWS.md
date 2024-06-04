@@ -1,7 +1,17 @@
+# org 2024.6.5
+
+- Fixed an error with org::initialize_project where "//" at the start of a path will be removed.
+
+# org 2022.12.28
+
+- Inclusion of `create_project_quarto` that provides an example project of how to use `org` with [quarto](https://quarto.org/).
+- Inclusion of file utility functions, such as `ls_files`, `move_file_or_dir`, `path`.
+- Inclusion of utility function `package_installed`.
+
 # org 2022.7.21
 
-- Reduction of exports to: initialize_project, set_results, write_text
-- initialize_project now takes in `env` as an argument (the environment into which the functions will be sourced)
+- Reduction of exports to: initialize_project, set_results, write_text.
+- initialize_project now takes in `env` as an argument (the environment into which the functions will be sourced).
 
 # org 2020.2.17
 
