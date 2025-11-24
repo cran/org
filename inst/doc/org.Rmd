@@ -1,7 +1,5 @@
 ---
 title: "Introduction to org"
-author: "Richard Aubrey White"
-date: "2020-02-17"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to org}
@@ -16,78 +14,119 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Concept 
+## Why org?
 
-The concept behind `org` is fairly simple - most analyses have three main sections:
+Managing research projects and data analyses can be challenging when dealing with:
 
-- code
-- results
-- data
+- **Inconsistent project structures** across different analyses
+- **Mixed requirements** for code (version control), results (sharing), and data (security)
+- **Collaboration difficulties** when team members use different folder structures
+- **Version tracking** for research submissions and revisions
+- **Cross-platform compatibility** issues with file paths
 
-Yet each of these sections have extremely different requirements.
+The `org` package solves these problems by providing a standardized framework for organizing R projects with clear separation of concerns and consistent structure across all your analyses.
 
-Code should:
+## Installation
 
-- Be version controlled
-- Be publically accessible
-- Have 1 analysis pipeline that logically and sequentially details all steps of the data cleaning, analysis, and result generation
+```{r eval=FALSE}
+# Install from CRAN
+install.packages("org")
 
-Results should:
-
-- Be immediately shared with close collaborators
-- Have each set of results saved and accessible, so that you can see how your results have changed over time (i.e. "if we run the code today, do we get similar results to yesterday?")
-
-Data should:
-
-- Be encrypted (if sensitive)
-- Not stored on the cloud (if sensitive)
-
-## Code
-
-### org::initialize_project
-
-`org::initialize_project` takes in 2+ arguments. It then saves its results (i.e. folder locations) in `org::project`, which you will use in all of your subsequent code.
-
-`home` is the location of `run.R` and the `R/` folder. It will be accessible via `org::project$home` (but you will rarely need this).
-
-`results` is your results folder. It will create a folder inside `results` with today's date and it will be accessible via `org::project$results_today` (this is where you will store all of your results). Because the folder's name is today's date, this means that it automatically archives one copy of results per day. This allows you and your collaborators to easily check and see how the results have changed over time.
-
-`...` you can specify other folders if you want, and they will also be accessible via `org::project`. Some suggested ones are `raw` (raw data) and `clean` (clean data).
-
-### run.R 
-
-`run.R` will be your masterfile. It will sequentially run through every part of your analysis:
-
-- data cleaning
-- analysis
-- result generation
-
-You will not have any other masterfiles, as this creates confusion when you need to return to your code 2 years later.
-
-All sections of code (e.g. data cleaning, analyses for table 1, analyses for table 2, result generation for table 1, sensitivity analysis 1, etc) will be encapsulated in functions that live in the `R` folder.
-
-An example `run.R` might look like this:
-
+# Or install development version from GitHub
+# devtools::install_github("csids/org")
 ```
-# Define the following 'special' locations:
-# 'home' (i.e. run.R and R/ folder)
-# 'results' (i.e. A folder with today's date will be created here)
 
-# Define any other locations you want:
-# 'raw' (i.e. raw data)
+## Quick start
 
+Here's how to get started with your first `org` project:
+
+```{r eval=FALSE}
+library(org)
+
+# 1. Initialize your project structure
+org::initialize_project(
+  env = .GlobalEnv,
+  home = "my_analysis",
+  results = "my_results"
+)
+
+# 2. Access project paths
+org::project$home          # Your code location
+org::project$results_today # Today's results folder
+
+# 3. Use org functions in your analysis
+org::path("data", "file.csv")  # Cross-platform paths
+org::ls_files("R")             # List R files
+```
+
+## Concept
+
+The concept behind `org` is straightforward - most analyses have three main sections:
+
+- **Code**: Analysis scripts and functions
+- **Results**: Output files and figures
+- **Data**: Input data files
+
+Each section has unique requirements:
+
+### Code requirements
+- Must be version controlled
+- Should be publicly accessible
+- Needs a single analysis pipeline documenting all steps
+- Should be organized into modular functions
+
+### Results requirements
+- Must be immediately shareable with collaborators
+- Should maintain a history of changes over time
+- Should be organized by date for tracking
+- Should be stored in a shared location (e.g., Dropbox)
+
+### Data requirements
+- Should be encrypted if sensitive
+- Should not be stored on cloud if sensitive
+- Should be organized by project/analysis
+- Should maintain clear separation from code and results
+
+## Project structure
+
+### Core components
+
+#### 1. `org::initialize_project`
+
+This is the main function that sets up your project structure. It takes 2+ arguments and saves folder locations in `org::project` for use throughout your analysis:
+
+- `home`: Location of `Run.R` and the `R/` folder (accessible via `org::project$home`)
+- `results`: Results folder that creates date-based subfolders (accessible via `org::project$results_today`)
+- `...`: Additional folders as needed (e.g., `data_raw`, `data_clean`)
+
+#### 2. `Run.R`
+
+This is your main analysis script that orchestrates the entire workflow:
+
+- Data cleaning
+- Analysis
+- Result generation
+
+All code sections should be encapsulated in functions in the `R/` folder. You should not have multiple main files, as this creates confusion when returning to your code later. However, you can have versioned files (e.g., `Run_v01.R`, `Run_v02.R`) where later versions supersede earlier ones.
+
+#### 3. `R/` directory
+
+All analysis functions should be defined in `org::project$home/R`. The `initialize_project` function automatically sources all R scripts in this directory.
+
+### Example project structure
+
+Here's a complete example of how to structure your project:
+
+```r
+# Initialize the project
 org::initialize_project(
   env = .GlobalEnv,
   home = "/git/analyses/2019/analysis3/",
-  results = "/dropbox/analyses_results/2019/analysis3/"
-  raw = "/data/analyses/2019/analysis3/"
+  results = "/dropbox/analyses_results/2019/analysis3/",
+  data_raw = "/data/analyses/2019/analysis3/"
 )
 
-# It is a good practice to describe how the archived
-# results are changing from day-to-day.
-#
-# We recommend saving this information as a text file
-# stored in the `org::project$results` folder.
+# Document changes in archived results
 txt <- glue::glue("
   2019-01-01:
     Included:
@@ -96,7 +135,6 @@ txt <- glue::glue("
   
   2019-02-02:
     Changed Table 1 from mean -> median
-  
 ", .trim=FALSE)
 
 org::write_text(
@@ -104,219 +142,272 @@ org::write_text(
   file = fs::path(org::project$results, "info.txt")
 )
 
+# Load required packages
 library(data.table)
 library(ggplot2)
 
-# This function would access data located in org::project$raw
-d <- clean_data()
-
-# These functions would save results to org::project$results_today
-table_1(d)
-figure_1(d)
-figure_2(d)
+# Run analysis
+d <- clean_data()  # Accesses data from org::project$data_raw
+table_1(d)         # Saves to org::project$results_today
+figure_1(d)        # Saves to org::project$results_today
+figure_2(d)        # Saves to org::project$results_today
 ```
 
-### R/
+## Research article versioning
 
-All of your functions should be defined in `org::project$home/R`. The function `org::initialize_project` automatically sources all of the R scripts in `org::project$home/R`, making them available for use.
+When writing research articles, you often need multiple versions (initial submission, resubmissions). `org` helps manage this by using date-based versioning:
 
-## Research Article Versioning (Submission/Resubmission)
+1. Initial submission:
+   - Rename `Run.R` to `Run_YYYY_MM_DD_submission_1.R`
+   - Rename `R/` to `R_YYYY_MM_DD_submission_1/`
 
-When writing a research article, multiple versions are often required (initial submission, followed by multiple resubmission variants based on the recommendations of peer reviewers).
+2. Resubmission:
+   - Create new files with updated dates
+   - Keep old versions for reference
 
-To account for this, on the initial submission of the article it is recommended to rename `run.R` and `R/` to `run_YYYY_MM_DD_submission_1.R` and `R_YYYY_MM_DD_submission_1/` (YYYY_MM_DD should be replaced with year, month, and date).
+This preserves the code that produced results for each submission, ensuring all changes are deliberate and intentional.
 
-When making adjustments for the resubmission, the relevant files/folders should be called `run_YYYY_MM_DD_submission_2.R` and `R_YYYY_MM_DD_submission_2/` (YYYY_MM_DD should be replaced with year, month, and date).
+## Team collaboration
 
-In doing so, you successfully preserve all of your code that produced the results for every submission, allowing you to easily ensure that all changes are deliberate and intentional.
+When working with team members who have different folder structures, you can specify multiple possible paths. The `org` package will automatically select the first path that exists:
 
-## Solutions
-
-### Best Practice
-
-Our very opinionated solution is as follows:
-
-Code should be stored in GitHub. Data should be stored locally in an encrypted volume. Results should be stored on Dropbox, with the results for each day stored in a different folder.
-
-```
-# code goes here:
-git
-  +-- analyses
-             +-- 2018
-             |      +-- analysis_1 <- org::project$home
-             |      |           +-- run.R
-             |      |           +-- R
-             |      |                  +-- clean_data.R
-             |      |                  +-- descriptives.R
-             |      |                  +-- analysis.R
-             |      |                  +-- figure_1.R
-             |      +-- analysis_2 <- org::project$home
-             |                  +-- run.R
-             |                  +-- R
-             |                         +-- clean_data.R
-             |                         +-- descriptives.R
-             |                         +-- analysis.R
-             |                         +-- figure_1.R
-             +-- 2019
-                    +-- analysis_3 <- org::project$home
-                                +-- run.R
-                                +-- R
-                                       +-- clean_data.R
-                                       +-- descriptives.R
-                                       +-- analysis.R
-                                       +-- figure_1.R
-                                       
-# results goes here:
-dropbox
-  +-- analyses_results
-             +-- 2018
-             |      +-- analysis_1 <- org::project$results
-             |      |           +-- 2018-03-12 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           +-- 2018-03-15 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           +-- 2018-03-18 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           |            +-- figure_2.png
-             |      |           +-- 2018-06-18 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- table_2.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           |            +-- figure_2.png
-             |      +-- analysis_2 <- org::project$results
-             |      |           +-- 2018-06-09 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           +-- 2018-12-15 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           +-- 2019-01-18 <- org::project$results_today
-             |      |           |            +-- table_1.xlsx
-             |      |           |            +-- figure_1.png
-             |      |           |            +-- figure_2.png
-             +-- 2019
-                    +-- analysis_3 <- org::project$results
-                    |           +-- 2019-06-09 <- org::project$results_today
-                    |           |            +-- table_1.xlsx
-                    |           |            +-- figure_1.png
-                    |           +-- 2019-12-15 <- org::project$results_today
-                    |           |            +-- table_1.xlsx
-                    |           |            +-- figure_1.png
-                    |           +-- 2020-01-18 <- org::project$results_today
-                    |           |            +-- table_1.xlsx
-                    |           |            +-- figure_1.png
-                    |           |            +-- figure_2.png
-
-# data goes here:
-data
-  +-- analyses
-             +-- 2018
-             |      +-- analysis_1 <- org::project$raw
-             |      |           +-- data.xlsx
-             |      +-- analysis_2 <- org::project$raw
-             |      |           +-- data.xlsx
-             +-- 2019
-                    +-- analysis_3 <- org::project$raw
-                                +-- data.xlsx
-
-```
-
-Suggested code for `run.R`:
-
-```
+```r
+# Team member setup - org will use the first existing path
 org::initialize_project(
   env = .GlobalEnv,
-  home = "/git/analyses/2019/analysis_3/",
-  results = "/dropbox/analyses_results/2019/analysis_3/",
-  raw = "/data/analyses/2019/analysis_3/"
+  home = c(
+    "/Users/teammate1/projects/analysis3/",  # Mac user
+    "/home/teammate2/analysis3/",            # Linux user  
+    "C:/Users/teammate3/analysis3/"          # Windows user
+  ),
+  results = c(
+    "/Users/teammate1/Dropbox/results/",
+    "/home/teammate2/dropbox/results/", 
+    "C:/Users/teammate3/Dropbox/results/"
+  ),
+  data_raw = c(
+    "/Users/teammate1/data/analysis3/",
+    "/home/teammate2/data/analysis3/",
+    "C:/shared_drive/data/analysis3/"
+  )
 )
 ```
 
-### Quarto
+This approach allows the same initialization code to work across different team members' machines without modification.
 
-If you only have one folder on a shared network drive, without access to GitHub or Dropbox, and you would like to create an RMarkdown document, then we propose the following solution:
+## Best practices
 
-```
-# code goes here:
-project_name <- org::project$home
-  +-- run.R
-  +-- R
-  |      +-- CleanData.R
-  |      +-- Descriptives.R
-  |      +-- Analysis1.R
-  |      +-- Graphs1.R
-  +-- paper
-  |      +-- paper.Rmd
-  +-- results <- org::project$results
-  |         +-- 2018-03-12 <- org::project$results_today
-  |         |            +-- table1.xlsx
-  |         |            +-- figure1.png
-  |         +-- 2018-03-12 <- org::project$results_today
-  |         |            +-- table1.xlsx
-  |         |            +-- figure1.png
-  +-- data_raw <- org::project$raw
-  |          +-- data.xlsx
-```
+### Recommended structure
 
-Suggested code for `run.R`:
+Store your project components in appropriate locations:
 
 ```
-# Initialize the project
+# Code (GitHub)
+git/
+└── analyses/
+    ├── 2018/
+    │   ├── analysis_1/          # org::project$home
+    │   │   ├── Run.R
+    │   │   └── R/
+    │   │       ├── clean_data.R
+    │   │       ├── descriptives.R
+    │   │       ├── analysis.R
+    │   │       └── figure_1.R
+    │   └── analysis_2/
+    └── 2019/
+        └── analysis_3/
 
+# Results (Dropbox)
+dropbox/
+└── analyses_results/
+    ├── 2018/
+    │   ├── analysis_1/          # org::project$results
+    │   │   ├── 2018-03-12/     # org::project$results_today
+    │   │   │   ├── table_1.xlsx
+    │   │   │   └── figure_1.png
+    │   │   ├── 2018-03-15/
+    │   │   └── 2018-03-18/
+    │   └── analysis_2/
+    └── 2019/
+        └── analysis_3/
+
+# Data (Local)
+data/
+└── analyses/
+    ├── 2018/
+    │   ├── analysis_1/          # org::project$data_raw
+    │   │   └── data.xlsx
+    │   └── analysis_2/
+    └── 2019/
+        └── analysis_3/
+```
+
+### Alternative structures
+
+#### RMarkdown project
+
+For projects on a shared network drive without GitHub/Dropbox:
+
+```
+project_name/              # org::project$home
+├── Run.R
+├── R/
+│   ├── CleanData.R
+│   ├── Descriptives.R
+│   ├── Analysis1.R
+│   └── Graphs1.R
+├── paper/
+│   └── paper.Rmd
+├── results/              # org::project$results
+│   └── 2018-03-12/      # org::project$results_today
+│       ├── table1.xlsx
+│       └── figure1.png
+└── data_raw/            # org::project$data_raw
+    └── data.xlsx
+```
+
+#### Single folder project
+
+For projects with limited access:
+
+```
+project_name/              # org::project$home
+├── Run.R
+├── R/
+│   ├── clean_data.R
+│   ├── descriptives.R
+│   ├── analysis.R
+│   └── figure_1.R
+├── results/              # org::project$results
+│   └── 2018-03-12/      # org::project$results_today
+│       ├── table_1.xlsx
+│       └── figure_1.png
+└── data_raw/            # org::project$data_raw
+    └── data.xlsx
+```
+
+## Path naming conventions
+
+Understanding path components is important:
+
+| Component              | Name                      |
+|------------------------|---------------------------|
+| /home/richard/test.src | Absolute (file)path       |
+| richard/test.src       | Relative (file)path       |
+| /home/richard/         | Absolute (directory) path |
+| ./richard/             | Relative (directory) path |
+| richard                | Directory                 |
+| test.src               | Filename                  |
+
+A path specifies a location in a directory structure, while a filename only includes the file name itself. Directories only include directory name information.
+
+## Function reference
+
+The `org` package provides several key functions for project management:
+
+### Core functions
+
+- **`org::initialize_project()`**: Set up project structure and source R files
+- **`org::set_results()`**: Modify results folder after project initialization  
+- **`org::project`**: Environment containing all project folder locations
+
+### File operations
+
+- **`org::path()`**: Construct cross-platform file paths
+- **`org::ls_files()`**: List files with optional pattern matching
+- **`org::move_directory()`**: Move directories safely
+- **`org::write_text()`**: Write text files with consistent formatting
+
+### Utility functions
+
+- **`org::package_installed()`**: Check if packages are installed
+- **`org::create_project_quarto_internal_results()`**: Create Quarto projects with internal results
+- **`org::create_project_quarto_external_results()`**: Create Quarto projects with external results
+
+## Common workflows
+
+### Setting up a new analysis
+
+```r
+# 1. Initialize project structure
 org::initialize_project(
   env = .GlobalEnv,
-  home = "/network/project_name/",
-  results = "/network/project_name/results/",
-  paper = "/network/paper/",
-  raw = "/network/project_name/data_raw/"
+  home = "/path/to/your/analysis/",
+  results = "/path/to/results/",
+  data_raw = "/path/to/data/"
 )
 
-# do some analyses here
-
-# render the paper
-
-rmarkdown::render(
-  input = fs::path(org::project$paper,"paper.Rmd"),
-  output_dir = org::project$results_today,
-  quiet = F
-)
+# 2. Create analysis functions in R/ folder
+# 3. Run analysis from Run.R  
+# 4. Results automatically saved to org::project$results_today
 ```
 
+### Working with existing projects
 
-### One Folder on a Shared Network Drive Without GitHub Access
-
-If you only have one folder on a shared network drive, without access to GitHub or Dropbox, then we propose the following solution:
-
-```
-# code goes here:
-project_name <- org::project$home
-  +-- run.R
-  +-- R
-  |      +-- clean_data.R
-  |      +-- descriptives.R
-  |      +-- analysis.R
-  |      +-- figure_1.R
-  +-- results <- org::project$results
-  |         +-- 2018-03-12 <- org::project$results_today
-  |         |            +-- table_1.xlsx
-  |         |            +-- figure_1.png
-  |         +-- 2018-03-12 <- org::project$results_today
-  |         |            +-- table_1.xlsx
-  |         |            +-- figure_1.png
-  +-- data_raw <- org::project$raw
-  |          +-- data.xlsx
-```
-
-Suggested code for `run.R`:
-
-```
+```r
+# Reinitialize existing project
 org::initialize_project(
   env = .GlobalEnv,
-  home = "/network/project_name/",
-  results = "/network/project_name/results/",
-  raw = "/network/project_name/data_raw/"
+  home = "/existing/analysis/path/",
+  results = "/existing/results/path/"
 )
+
+# Update results location if needed
+org::set_results("/new/results/path/")
 ```
+
+### Environment management
+
+**Recommendation: Always use `.GlobalEnv`** - it makes life so much easier! All your functions will be directly accessible without having to worry about environment scoping issues.
+
+```r
+# Recommended approach - use .GlobalEnv
+org::initialize_project(env = .GlobalEnv, ...)
+
+# Only use custom environments in special cases (e.g., package development)
+my_env <- new.env()
+org::initialize_project(env = my_env, ...)
+```
+
+## Path construction and cross-platform compatibility
+
+The `org::path()` function ensures your code works across different operating systems:
+
+```r
+# Cross-platform path construction
+data_file <- org::path(org::project$data_raw, "survey_data.csv")
+output_file <- org::path(org::project$results_today, "analysis_results.xlsx")
+
+# Handles multiple path components
+nested_path <- org::path("folder1", "subfolder", "file.txt")
+
+# Removes double slashes automatically
+clean_path <- org::path("folder//", "//file.txt")  # Returns "folder/file.txt"
+```
+
+## Troubleshooting
+
+### Common issues
+
+#### Path issues
+- Always use `org::path()` for cross-platform compatibility
+- Avoid hardcoded absolute paths in shared code
+- Check that all specified directories exist and are accessible
+- Ensure you have write permissions to results directories
+
+#### Sourcing problems
+```r
+# If functions aren't loading from R/ folder:
+# 1. Check that R files are in the correct directory
+org::ls_files(org::path(org::project$home, "R"))
+
+# 2. Verify file extensions are .R or .r
+# 3. Check for syntax errors in R files
+# 4. Restart R and reinitialize project if needed
+```
+
+### Getting help
+
+- Check the package documentation: `help(package = "org")`
+- View function help: `?org::initialize_project`
+- Report issues at: https://github.com/raubreywhite/org/issues

@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_text.R
 \name{write_text}
 \alias{write_text}
-\title{Write text to a file}
+\title{Write text to file}
 \usage{
 write_text(
   txt,
@@ -11,15 +11,24 @@ write_text(
 )
 }
 \arguments{
-\item{txt}{Text to be written}
+\item{txt}{A character string of text to be written to the file.}
 
-\item{file}{File, passed through to \code{base::cat}}
+\item{file}{A character string specifying the file path. Passed through to \code{base::cat}.
+Default is an empty string, which writes to the console.}
 
-\item{header}{Optional header that is inserted at the top of the text file}
+\item{header}{An optional character string header to be inserted at the top of the text file.
+Default is \verb{**THIS FILE IS CONSTANTLY OVERWRITTEN -- DO NOT MANUALLY EDIT**\\r\\n\\r\\n}.}
 }
 \value{
-No return value.
+No return value. Called for its side effect of writing to a file.
 }
 \description{
-Write text to a file
+Writes text to a file, optionally including a header at the top of the file.
+Text and header are converted from Linux newline format to Windows newline format before writing.
+}
+\examples{
+\dontrun{
+org::write_text("Sample text", "output.txt")
+org::write_text("Another piece of text", "output.txt", "Custom Header\r\n\r\n")
+}
 }

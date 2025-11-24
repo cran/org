@@ -1,3 +1,4 @@
+#' @keywords internal
 .onAttach <- function(libname, pkgname) {
   version <- tryCatch(
     utils::packageDescription("org", fields = "Version"),
@@ -10,6 +11,6 @@
     "org ",
     version,
     "\n",
-    "https://www.csids.no/org/"
+    "https://www.rwhite.no/org/"
   ))
 }
